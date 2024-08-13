@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
+    'Script_panel',
 ]
 
 NPM_BIN_PATH = 'C:\Program Files\\nodejs\\npm.cmd'

@@ -15,7 +15,7 @@ from FUNCTION.utils import calculate_elapsed_time
 from FUNCTION.AC_WISE_Calculation_function import main_processing_function as AC_Wise_calculation
 from FUNCTION.PC_WISE_Calculation_function import main_processing_function as PC_Wise_calculation
 
-driver_path = r"D:\DOWNLOAD\ojdbc11.jar"
+driver_path = r"D:\DOWNLOAD\\ojdbc11.jar"
 start_time = time.time()
 server = '192.168.0.27'
 user = 'sa'
@@ -33,7 +33,8 @@ newTableName3 = "ALL_STATE_TEST_DATA_BC"
 #---------------------------------------------------------------------------------------------------------------------#
 spark = SparkSession.builder \
     .appName("ALL_STATE_Voter_Data_Analysis") \
-    .config("spark.driver.extraClassPath", driver_path) \
+    .config("spark.driver.extraClassPath","driver_path") \
+    .config("spark.jars", "/path/to/mysql-connector-java.jar") \
     .config("spark.sql.shuffle.partitions", "1000") \
     .config("spark.executor.memory", "32g") \
     .config("spark.executor.memoryOverhead", "16g") \
@@ -153,12 +154,15 @@ df_reordered = df_joined.select(*desired_order)
 
 print("Reorederd table is....")
 
-
+sorted_df_reordered = df_reordered.orderBy(F.col("AC_ID"), F.col("PC_ID"))
 # res = insert_dataframe_into_database(df_reordered, newTableName3, url, driver)
 # print(res)
 
 def end_df():
-    return(df_reordered)
+    # Convert the Spark DataFrame to Pandas DataFrame
+    pandas_df = sorted_df_reordered.toPandas()
+    return pandas_df
+
 
 end_time = time.time()
 elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)

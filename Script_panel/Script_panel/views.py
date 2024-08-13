@@ -1,22 +1,42 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.core.paginator import Paginator
 import sys
+import pandas as pd
+import time
+
 sys.path.append('/path/to/VOTER_DATA_BACKUP')
 from VOTER_DATA_BACKUP.FUNCTION.test import end_df
 
 def button(request):
-    print('Rendering initial page')
     return render(request, 'home_page.html')
 
 def run_script(request):
-    print('Running the Python script')
+    if request.method == 'POST':
+        # Get the Pandas DataFrame
+        df = end_df()  # Assuming end_df returns a Pandas DataFrame
 
-    # Call the end_df() function and convert it to a list of lists for table rendering
-    df_result = end_df().collect()  # Assuming end_df returns a PySpark DataFrame
+        # Sort the DataFrame by specific columns
+        sorted_df = df.sort_values(by=['AC_ID', 'PC_ID'])
 
-    table_data = [row.asDict().values() for row in df_result]  # Convert to list of dictionaries, then extract values
+        # Convert DataFrame to list of dictionaries
+        table_data = sorted_df.to_dict(orient='records')
+        
+        # Dynamically get table headers
+        headers = sorted_df.columns.tolist()
 
-    # Store the table data in the context
-    context = {'table_data': table_data}
+        # Implement pagination
+        paginator = Paginator(table_data, 10)  # Show 10 items per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-    return render(request, 'home_page.html', context)
+        context = {
+            'table_data' : table_data,
+            'page_obj': page_obj,
+            'headers': headers,
+            'success_message': 'Data updated successfully!'
+        }
+        
+        return render(request, 'home_page.html', context)
+
+    return render(request, 'home_page.html')

@@ -871,12 +871,3 @@ select {
 .tracking-normal {
   letter-spacing: 0em;
 }
-
-.text-cyan-400 {
-  --tw-text-opacity: 1;
-  color: rgb(34 211 238 / var(--tw-text-opacity));
-}
-
-.mix-blend-saturation {
-  mix-blend-mode: saturation;
-}

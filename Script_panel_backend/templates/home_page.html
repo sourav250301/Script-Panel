@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .loader {
+            display: none;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: auto;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+        function showLoader() {
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("success-message").style.display = "none";
+        }
+
+        function hideLoader() {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("result-section").style.display = "block";
+            document.getElementById("success-message").style.display = "block";
+        }
+    </script>
+</head>
+<body>
+    <h1 class="text-center text-3xl bg-lime-500 p-4">Encuesta Analysis</h1>
+
+    <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" class="text-center my-4">
+        {% csrf_token %}
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Execute Script</button>
+    </form>
+
+    <div id="loader" class="loader"></div>
+
+    <div id="success-message" class="success-message">
+        {% if success_message %}
+            {{ success_message }}
+        {% endif %}
+    </div>
+
+    <div id="result-section" style="display: {% if page_obj %}block{% else %}none{% endif %};">
+        <h2 class="text-2xl font-bold my-4">Script Result</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-200">
+                {% if page_obj %}
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in page_obj %}
+                    <tr>
+                        {% for cell in row %}
+                        <td class="py-2 px-4 border-b border-gray-200">{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% else %}
+                <tbody>
+                    <tr>
+                        <td colspan="{{ headers|length }}" class="text-center py-4">No script output yet.</td>
+                    </tr>
+                </tbody>
+                {% endif %}
+            </table>
+        </div>
+
+        <!-- Tailwind Pagination Controls -->
+        <div class="mt-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Previous</a>
+                {% else %}
+                <span class="bg-gray-200 text-gray-400 font-bold py-2 px-4 rounded">Previous</span>
+                {% endif %}
+
+                <!-- Page Numbers -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num > page_obj.number|add:"-5" and num < page_obj.number|add:"5" %}
+                        {% if page_obj.number == num %}
+                            <span class="bg-indigo-600 text-white font-bold py-2 px-4 rounded">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">{{ num }}</a>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Next</a>
+                {% else %}
+                <span class="bg-gray-200 text-gray-400 font-bold py-2 px-4 rounded">Next</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

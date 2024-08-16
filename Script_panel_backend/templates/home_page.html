@@ -88,7 +88,6 @@
             </table>
         </div>
 
-        <!-- Tailwind Pagination Controls -->
         <div class="mt-4 flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 {% if page_obj.has_previous %}
@@ -96,18 +95,16 @@
                 {% else %}
                 <span class="bg-gray-200 text-gray-400 font-bold py-2 px-4 rounded">Previous</span>
                 {% endif %}
-
                 <!-- Page Numbers -->
-                {% for num in page_obj.paginator.page_range %}
-                    {% if num > page_obj.number|add:"-5" and num < page_obj.number|add:"5" %}
-                        {% if page_obj.number == num %}
-                            <span class="bg-indigo-600 text-white font-bold py-2 px-4 rounded">{{ num }}</span>
-                        {% else %}
-                            <a href="?page={{ num }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">{{ num }}</a>
-                        {% endif %}
+                {% for page_num in totalpages %}
+                {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
+                    {% if page_obj.number == page_num %}
+                        <span class="bg-indigo-600 text-white font-bold py-2 px-4 rounded">{{ page_num }}</span>
+                    {% else %}
+                        <a href="?page={{ page_num }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">{{ page_num }}</a>
                     {% endif %}
+                {% endif %}
                 {% endfor %}
-
                 {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Next</a>
                 {% else %}
@@ -115,6 +112,4 @@
                 {% endif %}
             </div>
         </div>
-    </div>
-</body>
-</html>
+        

@@ -31,6 +31,9 @@ def run_script(request):
         # Sort the DataFrame by specific columns
         sorted_df = df.sort_values(by=['state', 'PC_NO'])
 
+        # Get the total number of rows
+        total_rows = len(sorted_df)
+
         # Convert DataFrame to a list of lists for easier rendering in the template
         table_data = sorted_df.values.tolist()
 
@@ -61,6 +64,7 @@ def run_script(request):
             'pc_nos': pc_nos,
             'selected_state': state_filter,
             'selected_pc_no': pc_no_filter,
+            'total_rows': total_rows,  # Add total_rows to the context
         }
 
         return render(request, 'home_page.html', context)

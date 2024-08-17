@@ -53,7 +53,32 @@
                 pcNoSelect.disabled = true;
             } else {
                 pcNoSelect.disabled = false;
-                // Automatically submit the filter form when state is selected
+                document.getElementById('filter-form').submit();
+            }
+        }
+
+        function updateAcNoOptions() {
+            var pcNo = document.getElementById("filter_pc_no").value;
+            var acNoSelect = document.getElementById("filter_ac_no");
+
+            if (pcNo === "") {
+                acNoSelect.innerHTML = '<option value="">Select a PC_NO first</option>';
+                acNoSelect.disabled = true;
+            } else {
+                acNoSelect.disabled = false;
+                document.getElementById('filter-form').submit();
+            }
+        }
+
+        function updateRoundOptions() {
+            var acNo = document.getElementById("filter_ac_no").value;
+            var roundSelect = document.getElementById("filter_round");
+
+            if (acNo === "") {
+                roundSelect.innerHTML = '<option value="">Select an AC_NO first</option>';
+                roundSelect.disabled = true;
+            } else {
+                roundSelect.disabled = false;
                 document.getElementById('filter-form').submit();
             }
         }
@@ -75,13 +100,12 @@
 
         <!-- Filter 2: PC_NO -->
         <label for="filter_pc_no" class="ml-4 mr-2">PC_NO:</label>
-        <select name="filter_pc_no" id="filter_pc_no" class="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded" {% if not selected_state %}disabled{% endif %}>
+        <select name="filter_pc_no" id="filter_pc_no" class="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
             <option value="">Select a State first</option>
             {% for pc_no in pc_nos %}
             <option value="{{ pc_no }}" {% if selected_pc_no == pc_no %}selected{% endif %}>{{ pc_no }}</option>
             {% endfor %}
         </select>
-
         <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4">Apply Filter</button>
         <button type="button" onclick="submitExecuteForm()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
     </form>
@@ -102,6 +126,9 @@
 
     <div id="result-section" style="display: {% if page_obj %}block{% else %}none{% endif %};">
         <h2 class="text-2xl font-bold my-4">Script Result</h2>
+        {% if total_rows %}
+        <div class="text-lg font-semibold mb-2">Total Rows: {{ total_rows }}</div>
+        {% endif %}
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-200">
                 {% if page_obj %}
@@ -155,8 +182,3 @@
     </div>
 </body>
 </html>
-
-{% comment %} <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" id="execute-form" class="text-center my-4">
-    {% csrf_token %}
-    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Execute Script</button>
-</form> {% endcomment %}

@@ -118,7 +118,9 @@
     </script>
 </head>
 <body>
-    <h1 class="text-center text-3xl text-white p-4">Encuesta Analysis</h1>
+    <h1 class="text-center text-3xl font-bold">
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-blue-400">
+        People's Insight</h1>
 
     <div id="popup-message" class="popup-message"></div>
 
@@ -149,18 +151,18 @@
         </select>
 
         <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" onclick="showPopupMessage('Filter applied')">Apply Filter</button>
-        <button type="button" onclick="refreshFilters()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
+        <button type="button" onclick="showPopupMessage('Data Updated Successfully')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
     </form>
 
     <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" id="execute-form" class="text-center my-4">
         {% csrf_token %}
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="showPopupMessage('Data Updated Successfully')">Execute Script</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="refreshFilters()">Execute Script</button>
     </form>
 
     <div id="loader" class="loader"></div>
 
     <div id="result-section" style="display: {% if page_obj %}block{% else %}none{% endif %};">
-        <h2 class="text-2xl font-bold my-4 text-white text-center">Script Result</h2>
+        <h2 class="text-2xl font-bold my-4 text-white text-center">Campaign Result</h2>
         {% if total_rows %}
         <div class="text-lg font-semibold mb-2 text-white text-center">Total Rows: {{ total_rows }}</div>
         {% endif %}
@@ -197,9 +199,9 @@
         <div class="mt-4 flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-black hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md">Previous</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Previous</a>
                 {% else %}
-                <span class="bg-black text-white font-bold py-2 px-4 rounded">Previous</span>
+                <span class="bg-blue-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Previous</span>
                 {% endif %}
                 <!-- Page Numbers --> {% for page_num in totalpages %}
                 {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
@@ -208,9 +210,9 @@
                 {% endfor %}
                 <div class="bg-black text-white font-bold py-2 px-4 rounded">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-black hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Next</a>
                 {% else %}
-                <span class="bg-black text-white font-bold py-2 px-4 rounded">Next</span>
+                <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Next</span>
                 {% endif %}
             </div>
         </div>

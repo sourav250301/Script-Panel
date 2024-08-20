@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 import sys
 
+# Adjust the path to where the FUNCTION module is located
 sys.path.append('/path/to/VOTER_DATA_BACKUP')
 from VOTER_DATA_BACKUP.FUNCTION.test import end_df
 
@@ -9,27 +10,31 @@ def button(request):
     return render(request, 'home_page.html')
 
 def run_script(request):
-    if request.method == 'POST' or 'filter_state' in request.GET or 'filter_pc_no' in request.GET or 'page' in request.GET:
+    # Check if the request is a POST or if any filter or pagination is applied
+    if request.method == 'POST' or 'filter_state' in request.GET or 'filter_pc_no' in request.GET or 'filter_res1' in request.GET or 'page' in request.GET:
         df = end_df()  # Assuming end_df returns a Pandas DataFrame
 
         # Apply the first filter (State)
         state_filter = request.GET.get('filter_state')
         if state_filter:
             df = df[df['state'] == state_filter]
-            print("After state filter:", df)
 
-        # Get unique values for PC_NO after the state filter is applied and sort them
-        df['PC_NO'] = df['PC_NO'].astype(str)  # Ensure PC_NO is treated as a string
-        pc_nos = sorted(df['PC_NO'].unique()) if state_filter else []
+        # Get unique values for PC_NO after the state filter is applied and sort them numerically
+        df['PC_NO'] = df['PC_NO'].astype(int).astype(str)  # Convert PC_NO to int for sorting and then back to string
+        pc_nos = sorted(df['PC_NO'].unique(), key=lambda x: int(x)) if state_filter else []
 
         # Apply the second filter (PC_NO)
         pc_no_filter = request.GET.get('filter_pc_no')
         if state_filter and pc_no_filter:
             df = df[df['PC_NO'] == pc_no_filter]
-            print("After PC_NO filter:", df)
 
-        # Sort the DataFrame by specific columns
-        sorted_df = df.sort_values(by=['state', 'PC_NO'])
+        # Apply the third filter (RES1)
+        res1_filter = request.GET.get('filter_res1')
+        if res1_filter:
+            df = df[df['RES1'] == res1_filter]
+
+        # Sort the DataFrame by specific columns (after all filters are applied)
+        sorted_df = df.sort_values(by=['state', 'PC_NO', 'RES1'])
 
         # Get the total number of rows
         total_rows = len(sorted_df)
@@ -46,24 +51,37 @@ def run_script(request):
         page_obj = paginator.get_page(page_number)
         totalpages = page_obj.paginator.num_pages
 
-        # Get unique values for the first filter
-        states = end_df()['state'].unique()
+        # Get unique values for the first filter (state)
+        states = sorted(end_df()['state'].unique())  # Ensure states are sorted
 
-        # If state is selected, ensure PC_NO values are filtered and sorted
+        # Ensure PC_NO values are filtered and sorted numerically if state is selected
         if state_filter:
-            # Filter by state to get the relevant PC_NO values
             df_filtered = end_df()[end_df()['state'] == state_filter]
-            pc_nos = sorted(df_filtered['PC_NO'].astype(str).unique())
+            pc_nos = sorted(df_filtered['PC_NO'].astype(int).astype(str).unique(), key=lambda x: int(x))
+
+        # Get unique values for RES1 after applying the previous filters
+        res1_values = sorted(df['RES1'].unique()) if df['RES1'].notna().any() else []
+
+        # Determine the appropriate success message
+        success_message = ''
+        if request.method == 'POST':
+            success_message = 'Data updated successfully!'
+        elif state_filter or pc_no_filter or res1_filter:
+            success_message = 'Filter applied'
+        elif 'refresh' in request.GET:
+            success_message = 'Filter refreshed'
 
         context = {
             'headers': headers,
             'page_obj': page_obj,
             'totalpages': range(1, totalpages + 1),
-            'success_message': 'Data updated successfully!' if request.method == 'POST' else '',
+            'success_message': success_message,
             'states': states,
             'pc_nos': pc_nos,
+            'res1_values': res1_values,  # Add RES1 filter values to the context
             'selected_state': state_filter,
             'selected_pc_no': pc_no_filter,
+            'selected_res1': res1_filter,
             'total_rows': total_rows,  # Add total_rows to the context
         }
 

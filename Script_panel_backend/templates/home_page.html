@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,10 @@
     <title>Encuesta Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
+        body {
+            background: #000000;
+            color: #ffffff;
+        }
         .loader {
             display: none;
             border: 16px solid #f3f3f3;
@@ -25,6 +30,20 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .popup-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            left: auto;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
     </style>
     <script>
         function showLoader() {
@@ -37,6 +56,15 @@
             document.getElementById("loader").style.display = "none";
             document.getElementById("result-section").style.display = "block";
             document.getElementById("success-message").style.display = "block";
+        }
+
+        function showPopupMessage(message) {
+            const popup = document.getElementById("popup-message");
+            popup.innerText = message;
+            popup.style.display = "block";
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 3000);
         }
 
         function submitExecuteForm() {
@@ -82,60 +110,67 @@
                 document.getElementById('filter-form').submit();
             }
         }
+
+        function refreshFilters() {
+            showPopupMessage("Filter refreshed");
+            document.getElementById('filter-form').submit();
+        }
     </script>
 </head>
 <body>
-    <h1 class="text-center text-3xl bg-lime-500 p-4">Encuesta Analysis</h1>
+    <h1 class="text-center text-3xl text-white p-4">Encuesta Analysis</h1>
 
-    <!-- Filters Section -->
+    <div id="popup-message" class="popup-message"></div>
+
     <form method="get" action="{% url 'run_script' %}" id="filter-form" class="text-center my-4">
-        <!-- Filter 1: State -->
-        <label for="filter_state" class="mr-2">State:</label>
-        <select name="filter_state" id="filter_state" class="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded" onchange="updatePcNoOptions()">
+        <label for="filter_state" class="mr-2 text-white">State:</label>
+        <select name="filter_state" id="filter_state" class="bg-black border border-gray-300 text-white py-2 px-4 rounded" onchange="updatePcNoOptions()">
             <option value="">All States</option>
             {% for state in states %}
             <option value="{{ state }}" {% if selected_state == state %}selected{% endif %}>{{ state }}</option>
             {% endfor %}
         </select>
 
-        <!-- Filter 2: PC_NO -->
-        <label for="filter_pc_no" class="ml-4 mr-2">PC_NO:</label>
-        <select name="filter_pc_no" id="filter_pc_no" class="bg-white border border-gray-300 text-gray-800 py-2 px-4 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
+        <label for="filter_pc_no" class="ml-4 mr-2 text-white">PC_NO:</label>
+        <select name="filter_pc_no" id="filter_pc_no" class="bg-black border border-gray-300 text-white py-2 px-2 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
             <option value="">Select a State first</option>
             {% for pc_no in pc_nos %}
             <option value="{{ pc_no }}" {% if selected_pc_no == pc_no %}selected{% endif %}>{{ pc_no }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4">Apply Filter</button>
-        <button type="button" onclick="submitExecuteForm()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
+
+        <!-- RES1 Filter -->
+        <label for="filter_res1" class="ml-4 mr-2 text-white">Party:</label>
+        <select name="filter_res1" id="filter_res1" class="bg-black border border-gray-300 text-white py-2 px-4 rounded" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
+            <option value="">All Parties</option>
+            {% for res1 in res1_values %}
+            <option value="{{ res1 }}" {% if selected_res1 == res1 %}selected{% endif %}>{{ res1 }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" onclick="showPopupMessage('Filter applied')">Apply Filter</button>
+        <button type="button" onclick="refreshFilters()" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
     </form>
 
-    <!-- Existing Form for Executing Script -->
     <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" id="execute-form" class="text-center my-4">
         {% csrf_token %}
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Execute Script</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="showPopupMessage('Data Updated Successfully')">Execute Script</button>
     </form>
 
-    <!-- Loader and Result Sections -->
     <div id="loader" class="loader"></div>
-    <div id="success-message" class="success-message">
-        {% if success_message %}
-            {{ success_message }}
-        {% endif %}
-    </div>
 
     <div id="result-section" style="display: {% if page_obj %}block{% else %}none{% endif %};">
-        <h2 class="text-2xl font-bold my-4">Script Result</h2>
+        <h2 class="text-2xl font-bold my-4 text-white text-center">Script Result</h2>
         {% if total_rows %}
-        <div class="text-lg font-semibold mb-2">Total Rows: {{ total_rows }}</div>
+        <div class="text-lg font-semibold mb-2 text-white text-center">Total Rows: {{ total_rows }}</div>
         {% endif %}
         <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="min-w-full bg-black text-white border border-gray-200">
                 {% if page_obj %}
                 <thead>
                     <tr>
                         {% for header in headers %}
-                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-100">{{ header }}</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-black-100">{{ header }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -162,20 +197,20 @@
         <div class="mt-4 flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Previous</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-black hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md">Previous</a>
                 {% else %}
-                <span class="bg-gray-200 text-gray-400 font-bold py-2 px-4 rounded">Previous</span>
+                <span class="bg-black text-white font-bold py-2 px-4 rounded">Previous</span>
                 {% endif %}
-                <!-- Page Numbers -->
-                {% for page_num in totalpages %}
+                <!-- Page Numbers --> {% for page_num in totalpages %}
                 {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
                 <a href="?page={{ page_num }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}" class="{% if page_obj.number == page_num %}bg-blue-500 text-white{% else %}bg-gray-300 text-gray-800{% endif %} hover:bg-gray-400 font-bold py-2 px-4 rounded">{{ page_num }}</a>
                 {% endif %}
                 {% endfor %}
+                <div class="bg-black text-white font-bold py-2 px-4 rounded">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Next</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-black hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md">Next</a>
                 {% else %}
-                <span class="bg-gray-200 text-gray-400 font-bold py-2 px-4 rounded">Next</span>
+                <span class="bg-black text-white font-bold py-2 px-4 rounded">Next</span>
                 {% endif %}
             </div>
         </div>

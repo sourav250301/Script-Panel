@@ -254,7 +254,7 @@ def calculate_summery(df):
 
 def reorder_columns(df):
     desired_order = [
-        'RES_ACWISE','AC_WISE_PERCENTAGE', 'MAX_PER_ACWISE', 'WINNER_ACWISE', '2ND_PER_ACWISE', 'RUNNER_UP_ACWISE', 'MARGIN_ACWISE',
+        'AC_WISE_PERCENTAGE', 'MAX_PER_ACWISE', 'WINNER_ACWISE', '2ND_PER_ACWISE', 'RUNNER_UP_ACWISE', 'MARGIN_ACWISE',
         'MARGIN_GROUP_ACWISE', 'SUMMERY_ACWISE',
     ]
 

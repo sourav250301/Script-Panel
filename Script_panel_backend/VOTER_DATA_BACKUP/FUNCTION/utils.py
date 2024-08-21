@@ -7,20 +7,20 @@ def calculate_elapsed_time(start_time, end_time):
     return elapsed_time_seconds, minutes, seconds
 
 
-def insert_dataframe_into_database(dataframe,table_name,url,driver):
-    print("start inserting in database ....")
-    try:
-        dataframe.write \
-            .format("jdbc") \
-            .option("url", url) \
-            .option("dbtable", table_name) \
-            .option("driver", driver) \
-            .mode("overwrite") \
-            .save()
+# def insert_dataframe_into_database(dataframe,table_name,url,driver):
+#     # print("start inserting in database ....")
+#     try:
+#         dataframe.write \
+#             .format("jdbc") \
+#             .option("url", url) \
+#             .option("dbtable", table_name) \
+#             .option("driver", driver) \
+#             .mode("overwrite") \
+#             .save()
 
-        return "DataFrame inserted successfully into table: " + table_name
-    except Exception as e:
-        return f"Error occurred while inserting data: {e}"
+#         return "DataFrame inserted successfully into table: " + table_name
+#     except Exception as e:
+#         return f"Error occurred while inserting data: {e}"
 
 # def insert_dataframe_into_database(dataframe, table_name, url, driver, batch_size=1000):
 #     from pyspark.sql import DataFrame
@@ -86,10 +86,10 @@ def insert_dataframe_into_database(dataframe,table_name,url,driver):
 #     except Exception as e:
 #         return f"Error occurred while inserting data: {e}"
 
-def export_csv_file(dataframe, filename):
-    try:
-        dataframe.toPandas().to_csv(f"{filename}.csv", index=False)
-        return "DataFrame inserted successfully in CSV file: " + filename
-    except Exception as e:
-        print("Error Occurred while exporting CSV file:", e)
+# def export_csv_file(dataframe, filename):
+#     try:
+#         dataframe.toPandas().to_csv(f"{filename}.csv", index=False)
+#         return "DataFrame inserted successfully in CSV file: " + filename
+#     except Exception as e:
+#         print("Error Occurred while exporting CSV file:", e)
 

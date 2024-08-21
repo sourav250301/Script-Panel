@@ -307,6 +307,7 @@ def calculate_runner_up(df):
     return df
 
 
+
 def calculate_margin_and_group(df):
     print(" ")
     print("start calculating Margin ....")

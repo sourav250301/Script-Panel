@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             background: #000000;
             color: #ffffff;
         }
+
         .loader {
             display: none;
             border: 16px solid #f3f3f3;
@@ -27,8 +29,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .popup-message {
@@ -111,16 +118,29 @@
             }
         }
 
+        function resetFilters() {
+            document.getElementById("filter_state").selectedIndex = 0;
+            document.getElementById("filter_pc_no").innerHTML = '<option value="">Select a State first</option>';
+            document.getElementById("filter_pc_no").disabled = true;
+            document.getElementById("filter_ac_no").innerHTML = '<option value="">Select a PC_NO first</option>';
+            document.getElementById("filter_ac_no").disabled = true;
+            document.getElementById("filter_round").innerHTML = '<option value="">Select an AC_NO first</option>';
+            document.getElementById("filter_round").disabled = true;
+            document.getElementById("filter_res1").selectedIndex = 0;
+        }
+
         function refreshFilters() {
-            showPopupMessage("Filter refreshed");
-            document.getElementById('filter-form').submit();
+            resetFilters();
+            document.getElementById("filter-form").submit();
         }
     </script>
 </head>
+
 <body>
-    <h1 class="text-center text-3xl font-bold">
+    <h1 class="text-center text-3xl font-bold mx-4 my-4">
         <span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-blue-400">
-        People's Insight</h1>
+            People's Insight</span>
+    </h1>
 
     <div id="popup-message" class="popup-message"></div>
 
@@ -151,12 +171,12 @@
         </select>
 
         <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" onclick="showPopupMessage('Filter applied')">Apply Filter</button>
-        <button type="button" onclick="refreshFilters()" name="refresh" value="true" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
+        <button type="button" onclick="refreshFilters(); showPopupMessage('Filter refreshed')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
     </form>
 
     <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" id="execute-form" class="text-center my-4">
         {% csrf_token %}
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="refreshFilters()">Execute Script</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="showPopupMessage('Script Executed')">Execute Script</button>
     </form>
 
     <div id="loader" class="loader"></div>
@@ -194,28 +214,36 @@
                 {% endif %}
             </table>
         </div>
-
         <!-- Pagination -->
-        <div class="mt-4 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Previous</a>
-                {% else %}
-                <span class="bg-blue-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Previous</span>
-                {% endif %}
-                <!-- Page Numbers --> {% for page_num in totalpages %}
-                {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
-                <a href="?page={{ page_num }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}" class="{% if page_obj.number == page_num %}bg-blue-500 text-white{% else %}bg-gray-300 text-gray-800{% endif %} hover:bg-gray-400 font-bold py-2 px-4 rounded">{{ page_num }}</a>
-                {% endif %}
-                {% endfor %}
-                <div class="bg-black text-white font-bold py-2 px-4 rounded">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Next</a>
-                {% else %}
-                <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Next</span>
-                {% endif %}
-            </div>
-        </div>
+<div class="mt-4 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Previous</a>
+        {% else %}
+        <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Previous</span>
+        {% endif %}
+
+        <!-- Page Numbers -->
+        {% for page_num in totalpages %}
+        {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
+        <a href="?page={{ page_num }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="{% if page_obj.number == page_num %}bg-blue-500 text-white{% else %}bg-gray-300 text-gray-800{% endif %} hover:bg-gray-400 font-bold py-2 px-4 rounded">
+            {{ page_num }}
+        </a>
+        {% endif %}
+        {% endfor %}
+
+        <!-- Current Page Indicator -->
+        <div class="bg-black text-white font-bold py-2 px-4 rounded">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Next</a>
+        {% else %}
+        <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Next</span>
+        {% endif %}
+    </div>
+</div>
+
+    <div id="success-message" class="text-center my-4">
     </div>
 </body>
 </html>

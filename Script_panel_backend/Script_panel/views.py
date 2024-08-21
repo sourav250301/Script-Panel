@@ -4,7 +4,7 @@ import sys
 
 # Adjust the path to where the FUNCTION module is located
 sys.path.append('/path/to/VOTER_DATA_BACKUP')
-from VOTER_DATA_BACKUP.ALL_ROUND_DATA.final_join_all_round import end_df
+from VOTER_DATA_BACKUP.FUNCTION.test import end_df
 
 def button(request):
     return render(request, 'home_page.html')
@@ -19,6 +19,25 @@ def run_script(request):
             state_filter = ''
             pc_no_filter = ''
             res1_filter = ''
+
+            # Get the total number of rows in the unfiltered DataFrame
+            total_rows = len(df)
+
+            # Reset the context to default values
+            context = {
+                'headers': [],
+                'page_obj': None,
+                'totalpages': range(1, 2),  # Show only one page (initial state)
+                'success_message': 'Filter refreshed',
+                'states': sorted(end_df()['state'].unique()),  # Reload the states for initial selection
+                'pc_nos': [],
+                'res1_values': [],
+                'selected_state': state_filter,
+                'selected_pc_no': pc_no_filter,
+                'selected_res1': res1_filter,
+                'total_rows': 0,  # Reset total_rows display
+            }
+
         else:
             # Apply the first filter (State)
             state_filter = request.GET.get('filter_state')
@@ -68,28 +87,26 @@ def run_script(request):
             # Get unique values for RES1 after applying the previous filters
             res1_values = sorted(df['RES1'].unique()) if df['RES1'].notna().any() else []
 
-        # Determine the appropriate success message
-        success_message = ''
-        if request.method == 'POST':
-            success_message = 'Data updated successfully!'
-        elif 'refresh' in request.GET:
-            success_message = 'Filter refreshed'
-        elif state_filter or pc_no_filter or res1_filter:
-            success_message = 'Filter applied'
+            # Determine the appropriate success message
+            success_message = ''
+            if request.method == 'POST':
+                success_message = 'Data updated successfully!'
+            elif state_filter or pc_no_filter or res1_filter:
+                success_message = 'Filter applied'
 
-        context = {
-            'headers': headers if not 'refresh' in request.GET else [],
-            'page_obj': page_obj if not 'refresh' in request.GET else None,
-            'totalpages': range(1, totalpages + 1) if not 'refresh' in request.GET else range(1, 2),
-            'success_message': success_message,
-            'states': states if not 'refresh' in request.GET else [],
-            'pc_nos': pc_nos if not 'refresh' in request.GET else [],
-            'res1_values': res1_values if not 'refresh' in request.GET else [],
-            'selected_state': state_filter,
-            'selected_pc_no': pc_no_filter,
-            'selected_res1': res1_filter,
-            'total_rows': total_rows if not 'refresh' in request.GET else 0,  # Add total_rows to the context
-        }
+            context = {
+                'headers': headers,
+                'page_obj': page_obj,
+                'totalpages': range(1, totalpages + 1),
+                'success_message': success_message,
+                'states': states,
+                'pc_nos': pc_nos,
+                'res1_values': res1_values,
+                'selected_state': state_filter,
+                'selected_pc_no': pc_no_filter,
+                'selected_res1': res1_filter,
+                'total_rows': total_rows,  # Add total_rows to the context
+            }
 
         return render(request, 'home_page.html', context)
 

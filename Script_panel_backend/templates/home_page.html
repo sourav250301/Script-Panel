@@ -126,7 +126,7 @@
 
     <form method="get" action="{% url 'run_script' %}" id="filter-form" class="text-center my-4">
         <label for="filter_state" class="mr-2 text-white">State:</label>
-        <select name="filter_state" id="filter_state" class="bg-black border border-gray-300 text-white py-2 px-4 rounded" onchange="updatePcNoOptions()">
+        <select name="filter_state" id="filter_state" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded" onchange="updatePcNoOptions()">
             <option value="">All States</option>
             {% for state in states %}
             <option value="{{ state }}" {% if selected_state == state %}selected{% endif %}>{{ state }}</option>
@@ -134,7 +134,7 @@
         </select>
 
         <label for="filter_pc_no" class="ml-4 mr-2 text-white">PC_NO:</label>
-        <select name="filter_pc_no" id="filter_pc_no" class="bg-black border border-gray-300 text-white py-2 px-2 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
+        <select name="filter_pc_no" id="filter_pc_no" class="form-select bg-black border border-gray-300 text-white py-2 px-2 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
             <option value="">Select a State first</option>
             {% for pc_no in pc_nos %}
             <option value="{{ pc_no }}" {% if selected_pc_no == pc_no %}selected{% endif %}>{{ pc_no }}</option>
@@ -143,7 +143,7 @@
 
         <!-- RES1 Filter -->
         <label for="filter_res1" class="ml-4 mr-2 text-white">Party:</label>
-        <select name="filter_res1" id="filter_res1" class="bg-black border border-gray-300 text-white py-2 px-4 rounded" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
+        <select name="filter_res1" id="filter_res1" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
             <option value="">All Parties</option>
             {% for res1 in res1_values %}
             <option value="{{ res1 }}" {% if selected_res1 == res1 %}selected{% endif %}>{{ res1 }}</option>
@@ -151,7 +151,7 @@
         </select>
 
         <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4" onclick="showPopupMessage('Filter applied')">Apply Filter</button>
-        <button type="button" onclick="showPopupMessage('Data Updated Successfully')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
+        <button type="button" onclick="refreshFilters()" name="refresh" value="true" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded ml-4">Refresh</button>
     </form>
 
     <form method="post" action="{% url 'run_script' %}" onsubmit="showLoader()" id="execute-form" class="text-center my-4">

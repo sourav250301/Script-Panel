@@ -138,7 +138,7 @@
 
 <body>
     <h1 class="text-center text-3xl font-bold mx-4 my-4">
-        <span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-blue-400">
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-80% py-2 px-4 rounded-md">
             People's Insight</span>
     </h1>
 
@@ -163,7 +163,7 @@
 
         <!-- RES1 Filter -->
         <label for="filter_res1" class="ml-4 mr-2 text-white">Party:</label>
-        <select name="filter_res1" id="filter_res1" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
+        <select name="filter_res1" id="filter_res1" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded-md" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
             <option value="">All Parties</option>
             {% for res1 in res1_values %}
             <option value="{{ res1 }}" {% if selected_res1 == res1 %}selected{% endif %}>{{ res1 }}</option>
@@ -182,9 +182,9 @@
     <div id="loader" class="loader"></div>
 
     <div id="result-section" style="display: {% if page_obj %}block{% else %}none{% endif %};">
-        <h2 class="text-2xl font-bold my-4 text-white text-center">Campaign Result</h2>
+        <h2 class="text-2xl font-bold my-4 text-gray-400 text-center">Campaign Result</h2>
         {% if total_rows %}
-        <div class="text-lg font-semibold mb-2 text-white text-center">Total Rows: {{ total_rows }}</div>
+        <div class="text-lg font-semibold mb-2 text-gray-400 text-center">Total Rows: {{ total_rows }}</div>
         {% endif %}
         <div class="overflow-x-auto">
             <table class="min-w-full bg-black text-white border border-gray-200">
@@ -192,7 +192,7 @@
                 <thead>
                     <tr>
                         {% for header in headers %}
-                        <th class="py-2 px-4 border-b border-gray-200 bg-black-100">{{ header }}</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-black-100 text-gray-400">{{ header }}</th>
                         {% endfor %}
                     </tr>
                 </thead>

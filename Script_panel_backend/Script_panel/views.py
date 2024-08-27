@@ -42,24 +42,38 @@ def run_script(request):
             # Apply the first filter (State)
             state_filter = request.GET.get('filter_state')
             if state_filter:
-                df = df[df['state'] == state_filter]
+                # Create a copy of the DataFrame
+                df_filtered = state_filter.copy()
+                df_filtered = df_filtered[df_filtered['state'] == state_filter]
 
-            # Get unique values for PC_NO after the state filter is applied and sort them numerically
-            df['PC_NO'] = df['PC_NO'].astype(int).astype(str)  # Convert PC_NO to int for sorting and then back to string
-            pc_nos = sorted(df['PC_NO'].unique(), key=lambda x: int(x)) if state_filter else []
+                # Create a new column for integer conversion
+                df_filtered = df_filtered.withColumn('PC_NO_int', F.col('PC_NO').cast('int'))
+                df_filtered['PC_NO'] = df_filtered['PC_NO_int'].astype(str)  # Convert back to string if needed
+
+                pc_nos = sorted(df_filtered['PC_NO'].unique(), key=lambda x: int(x)) if state_filter else []
 
             # Apply the second filter (PC_NO)
             pc_no_filter = request.GET.get('filter_pc_no')
             if state_filter and pc_no_filter:
-                df = df[df['PC_NO'] == pc_no_filter]
+                # Check if df_filtered is already defined
+                if 'df_filtered' not in locals():
+                    df_filtered = pc_no_filter.copy()
+                    df_filtered = df_filtered[df_filtered['state'] == state_filter]
+
+                df_filtered = df_filtered[df_filtered['PC_NO'] == pc_no_filter]
 
             # Apply the third filter (RES1)
             res1_filter = request.GET.get('filter_res1')
             if res1_filter:
-                df = df[df['RES1'] == res1_filter]
+                # Check if df_filtered is already defined
+                if 'df_filtered' not in locals():
+                    df_filtered = res1_filter.copy()
+                    df_filtered = df_filtered[df_filtered['state'] == state_filter]
+
+                df_filtered = df_filtered[df_filtered['RES1'] == res1_filter]
 
             # Sort the DataFrame by specific columns (after all filters are applied)
-            sorted_df = df.sort_values(by=['state', 'PC_NO', 'RES1'])
+            sorted_df = df_filtered.sort_values(by=['state', 'PC_NO', 'RES1'])
 
             # Get the total number of rows
             total_rows = len(sorted_df)
@@ -108,6 +122,10 @@ def run_script(request):
                 'total_rows': total_rows,  # Add total_rows to the context
             }
 
-        return render(request, 'home_page.html', context)
+        # Ensure df_filtered is defined before using it outside the conditional blocks
+        if 'df_filtered' not in locals():
+            df_filtered = df.copy()
 
-    return render(request, 'home_page.html', {})
+        # ... (rest of your code using df_filtered)
+
+        return render(request, 'home_page.html', context)

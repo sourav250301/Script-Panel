@@ -49,14 +49,14 @@ spark = SparkSession.builder \
     .config("spark.sql.debug.maxToStringFields", "200") \
     .getOrCreate()
 
-statesBC = ['bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch', 'bc_dl', 'bc_ga', 'bc_gj', 'bc_hp', 'bc_tn', 'bc_hr', 'bc_jh', 'bc_ka', 'bc_kl', 'bc_mh', 'bc_mp', 'bc_od', 'bc_pb', 'bc_rj', 'bc_tg', 'bc_uk', 'bc_up', 'bc_wb']
+statesEP = ['ep_ap', 'ep_asm', 'ep_br', 'ep_cg', 'ep_ch', 'ep_dl', 'ep_ga', 'ep_gj', 'ep_hp', 'ep_tn', 'ep_hr', 'ep_jh', 'ep_ka', 'ep_kl', 'ep_mh', 'ep_mp', 'ep_od', 'ep_pb', 'ep_rj', 'ep_tg', 'ep_uk', 'ep_up', 'ep_wb']
 # statesBC = ['bc_od','bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch',]
 
 def import_queries(module_name, state_list):
     module = importlib.import_module(module_name)
     return {state: getattr(module, state) for state in state_list}
 
-bc_queries = import_queries('Queries.queries_BC', statesBC)
+ep_queries = import_queries('Queries.queries_EP', statesEP)
 
 
 #------------------------------------------------------------------------------------------------#
@@ -74,7 +74,7 @@ print("Completed SQL Queries...................")
 print(" ")
 #------------------------------------------------------------------------------------------------#
 
-bc_df = create_df_from_queries(bc_queries)
+ep_df = create_df_from_queries(ep_queries)
 #------------------------------------------------------------------------------------------------#
 
 print("Second query Execute Start ....")
@@ -89,7 +89,7 @@ df_sql = spark.read \
 df_sql = df_sql.withColumnRenamed("PC_REGION", "REGION")
 df_sql = df_sql.withColumn("AC_ID", F.concat(F.col("State_Code"), F.lit('-AC-'), F.col("AC_NO").cast("string")))
 #
-final_bc_df = bc_df.join(
+final_ep_df = ep_df.join(
     df_sql.select("AC_ID", "REGION"),
     on=["AC_ID"],
     how="left"
@@ -99,8 +99,8 @@ print("Second query Execute completed ....")
 print(" ")
 #------------------------------------------------------------------------------------------------#
 
-rows_count=final_bc_df.count()
-final_merged_df=final_bc_df
+rows_count=final_ep_df.count()
+final_merged_df=final_ep_df
 
 #---------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------#
@@ -108,7 +108,7 @@ final_merged_df=final_bc_df
 print("BC Round AC_Wise data calculation start .....😊😊😊😊")
 
 ac_final_dataframe = AC_Wise_calculation(final_merged_df)
-ac_final_dataframe = ac_final_dataframe.withColumn('ROUND', lit('BC'))
+ac_final_dataframe = ac_final_dataframe.withColumn('ROUND', lit('EP'))
 # result1 = insert_dataframe_into_database(ac_final_dataframe, newTableName1,url, driver)
 # print(result1)
 print("BC Round AC_Wise data Execution completed .....😊😊😊😊")

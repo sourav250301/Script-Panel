@@ -14,6 +14,9 @@ def run_script(request):
     if request.method == 'POST' or 'refresh' in request.GET or 'filter_state' in request.GET or 'filter_pc_no' in request.GET or 'filter_res1' in request.GET or 'page' in request.GET:
         df = end_df()  # Assuming end_df returns a Pandas DataFrame
 
+        # Initialize variables
+        pc_nos = []  # Initialize pc_nos to an empty list
+
         # Handle the refresh action
         if 'refresh' in request.GET:
             state_filter = ''
@@ -39,37 +42,26 @@ def run_script(request):
             }
 
         else:
+            df_filtered = df.copy()  # Initialize df_filtered with the original DataFrame
+
             # Apply the first filter (State)
             state_filter = request.GET.get('filter_state')
             if state_filter:
-                # Create a copy of the DataFrame
-                df_filtered = state_filter.copy()
                 df_filtered = df_filtered[df_filtered['state'] == state_filter]
 
-                # Create a new column for integer conversion
-                df_filtered = df_filtered.withColumn('PC_NO_int', F.col('PC_NO').cast('int'))
-                df_filtered['PC_NO'] = df_filtered['PC_NO_int'].astype(str)  # Convert back to string if needed
+                # Sort PC_NO as integers for correct ordering
+                df_filtered['PC_NO'] = df_filtered['PC_NO'].astype(int).astype(str)
 
                 pc_nos = sorted(df_filtered['PC_NO'].unique(), key=lambda x: int(x)) if state_filter else []
 
             # Apply the second filter (PC_NO)
             pc_no_filter = request.GET.get('filter_pc_no')
-            if state_filter and pc_no_filter:
-                # Check if df_filtered is already defined
-                if 'df_filtered' not in locals():
-                    df_filtered = pc_no_filter.copy()
-                    df_filtered = df_filtered[df_filtered['state'] == state_filter]
-
+            if pc_no_filter:
                 df_filtered = df_filtered[df_filtered['PC_NO'] == pc_no_filter]
 
             # Apply the third filter (RES1)
             res1_filter = request.GET.get('filter_res1')
             if res1_filter:
-                # Check if df_filtered is already defined
-                if 'df_filtered' not in locals():
-                    df_filtered = res1_filter.copy()
-                    df_filtered = df_filtered[df_filtered['state'] == state_filter]
-
                 df_filtered = df_filtered[df_filtered['RES1'] == res1_filter]
 
             # Sort the DataFrame by specific columns (after all filters are applied)
@@ -95,11 +87,10 @@ def run_script(request):
 
             # Ensure PC_NO values are filtered and sorted numerically if state is selected
             if state_filter:
-                df_filtered = end_df()[end_df()['state'] == state_filter]
                 pc_nos = sorted(df_filtered['PC_NO'].astype(int).astype(str).unique(), key=lambda x: int(x))
 
             # Get unique values for RES1 after applying the previous filters
-            res1_values = sorted(df['RES1'].unique()) if df['RES1'].notna().any() else []
+            res1_values = sorted(df_filtered['RES1'].unique()) if df_filtered['RES1'].notna().any() else []
 
             # Determine the appropriate success message
             success_message = ''
@@ -114,18 +105,12 @@ def run_script(request):
                 'totalpages': range(1, totalpages + 1),
                 'success_message': success_message,
                 'states': states,
-                'pc_nos': pc_nos,
+                'pc_nos': pc_nos,  # Use pc_nos which is now always initialized
                 'res1_values': res1_values,
                 'selected_state': state_filter,
                 'selected_pc_no': pc_no_filter,
                 'selected_res1': res1_filter,
                 'total_rows': total_rows,  # Add total_rows to the context
             }
-
-        # Ensure df_filtered is defined before using it outside the conditional blocks
-        if 'df_filtered' not in locals():
-            df_filtered = df.copy()
-
-        # ... (rest of your code using df_filtered)
 
         return render(request, 'home_page.html', context)

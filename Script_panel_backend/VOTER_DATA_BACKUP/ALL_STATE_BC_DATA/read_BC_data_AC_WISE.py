@@ -43,14 +43,14 @@ spark = SparkSession.builder \
     .config("spark.sql.debug.maxToStringFields", "200") \
     .getOrCreate()
 
-statesEP = ['ep_ap', 'ep_asm', 'ep_br', 'ep_cg', 'ep_ch', 'ep_dl', 'ep_ga', 'ep_gj', 'ep_hp', 'ep_tn', 'ep_hr', 'ep_jh', 'ep_ka', 'ep_kl', 'ep_mh', 'ep_mp', 'ep_od', 'ep_pb', 'ep_rj', 'ep_tg', 'ep_uk', 'ep_up', 'ep_wb']
+statesBC = ['bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch', 'bc_dl', 'bc_ga', 'bc_gj', 'bc_hp', 'bc_tn', 'bc_hr', 'bc_jh', 'bc_ka', 'bc_kl', 'bc_mh', 'bc_mp', 'bc_od', 'bc_pb', 'bc_rj', 'bc_tg', 'bc_uk', 'bc_up', 'bc_wb']
 # statesBC = ['bc_od','bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch',]
 
 def import_queries(module_name, state_list):
     module = importlib.import_module(module_name)
     return {state: getattr(module, state) for state in state_list}
 
-bc_queries = import_queries('Queries.queries_EP', statesEP)
+bc_queries = import_queries('Queries.queries_BC', statesBC)
 
 
 #------------------------------------------------------------------------------------------------#
@@ -110,11 +110,11 @@ final_merged_df=final_bc_df
 #---------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------#
-print("EP Rount data calculation start .....😊😊😊😊")
+print("BC Rount data calculation start .....😊😊😊😊")
 
 final_dataframe = main_processing_function(final_merged_df)
 
-final_dataframe = final_dataframe.withColumn('ROUND', lit('EP'))
+final_dataframe = final_dataframe.withColumn('ROUND', lit('BC'))
 # df=final_dataframe
 
 # result = insert_dataframe_into_database(df, newTableName,url, driver)

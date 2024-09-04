@@ -117,6 +117,18 @@
                 document.getElementById('filter-form').submit();
             }
         }
+        function updateRES1Options() {
+            var acNo = document.getElementById("filter_ac_no").value;
+            var res1Select = document.getElementById("filter_ac_no")
+
+            if (acNo === "") {
+                roundSelect.innerHTML = '<option value="">Select an AC_NO first</option>';
+                roundSelect.disabled = true;
+            } else {
+                roundSelect.disabled = false;
+                document.getElementById('filter-form').submit();
+            } 
+        }
 
         function resetFilters() {
             document.getElementById("filter_state").selectedIndex = 0;
@@ -145,24 +157,24 @@
 
     <form method="get" action="{% url 'run_script' %}" id="filter-form" class="text-center my-4 justify-between">
         <label for="filter_state" class="mr-2 text-white">State:</label>
-        <select name="filter_state" id="filter_state" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded" onchange="updatePcNoOptions()">
+        <select name="filter_state" id="filter_state" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded" onchange="updateAcNoOptions()">
             <option value="">All States</option>
             {% for state in states %}
             <option value="{{ state }}" {% if selected_state == state %}selected{% endif %}>{{ state }}</option>
             {% endfor %}
         </select>
 
-        <label for="filter_pc_no" class="ml-4 mr-2 text-white">PC_NO:</label>
-        <select name="filter_pc_no" id="filter_pc_no" class="form-select bg-black border border-gray-300 text-white py-2 px-2 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateAcNoOptions()">
+        <label for="filter_ac_no" class="ml-4 mr-2 text-white">AC_NO:</label>
+        <select name="filter_ac_no" id="filter_ac_no" class="form-select bg-black border border-gray-300 text-white py-2 px-2 rounded" {% if not selected_state %}disabled{% endif %} onchange="updateRES1Options()">
             <option value="">Select a State first</option>
-            {% for pc_no in pc_nos %}
-            <option value="{{ pc_no }}" {% if selected_pc_no == pc_no %}selected{% endif %}>{{ pc_no }}</option>
+            {% for ac_no in ac_nos %}
+            <option value="{{ ac_no }}" {% if selected_ac_no == ac_no %}selected{% endif %}>{{ ac_no }}</option>
             {% endfor %}
         </select>
 
         <!-- RES1 Filter -->
         <label for="filter_res1" class="ml-4 mr-2 text-white">Party:</label>
-        <select name="filter_res1" id="filter_res1" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded-md" {% if not selected_state and not selected_pc_no %}disabled{% endif %}>
+        <select name="filter_res1" id="filter_res1" class="form-select bg-black border border-gray-300 text-white py-2 px-4 rounded-md" {% if not selected_state and not selected_ac_no %}disabled{% endif %}>
             <option value="">All Parties</option>
             {% for res1 in res1_values %}
             <option value="{{ res1 }}" {% if selected_res1 == res1 %}selected{% endif %}>{{ res1 }}</option>
@@ -215,7 +227,7 @@
 <div class="mt-4 flex items-center justify-between">
     <div class="flex items-center space-x-2">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Previous</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_ac_no %}&filter_ac_no={{ selected_ac_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Previous</a>
         {% else %}
         <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Previous</span>
         {% endif %}
@@ -223,7 +235,7 @@
         <!-- Page Numbers -->
         {% for page_num in totalpages %}
         {% if page_num > page_obj.number|add:"-5" and page_num < page_obj.number|add:"5" %}
-        <a href="?page={{ page_num }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="{% if page_obj.number == page_num %}bg-blue-500 text-white{% else %}bg-gray-300 text-gray-800{% endif %} hover:bg-gray-400 font-bold py-2 px-4 rounded">
+        <a href="?page={{ page_num }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_ac_no %}&filter_ac_no={{ selected_ac_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="{% if page_obj.number == page_num %}bg-blue-500 text-white{% else %}bg-gray-300 text-gray-800{% endif %} hover:bg-gray-400 font-bold py-2 px-4 rounded">
             {{ page_num }}
         </a>
         {% endif %}
@@ -233,7 +245,7 @@
         <div class="bg-black text-white font-bold py-2 px-4 rounded">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
 
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_pc_no %}&filter_pc_no={{ selected_pc_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Next</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_state %}&filter_state={{ selected_state }}{% endif %}{% if selected_ac_no %}&filter_ac_no={{ selected_ac_no }}{% endif %}{% if selected_res1 %}&filter_res1={{ selected_res1 }}{% endif %}" class="bg-blue-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded-md border border-gray-300">Next</a>
         {% else %}
         <span class="bg-gray-500 text-white font-bold py-2 px-4 rounded border border-gray-300">Next</span>
         {% endif %}

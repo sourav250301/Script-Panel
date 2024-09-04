@@ -12,11 +12,13 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from FUNCTION.utils import calculate_elapsed_time,export_csv_file,insert_dataframe_into_database
-from FUNCTION.PC_WISE_Calculation_function import main_processing_function
+from FUNCTION.AC_WISE_Calculation_function import main_processing_function as AC_Wise_calculation
+from FUNCTION.PC_WISE_Calculation_function import main_processing_function as PC_Wise_calculation
+from FUNCTION.SEQ_WISE_AC_calculation_function import main_processing_function as SEQ_Wise_calculation_AC
+from FUNCTION.SEQ_WISE_PC_calculation_function import main_processing_function as SEQ_Wise_calculation_PC
 
 driver_path = r"D:\DOWNLOAD\ojdbc11.jar"
 start_time = time.time()
-
 server = '192.168.0.27'
 user = 'sa'
 password = 'NXT@LKJHGFDSA'
@@ -24,12 +26,21 @@ database = 'voter'
 port = '1433'
 driver = 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
 url = f"jdbc:sqlserver://{server}:1433;databaseName={database};user={user};password={password}"
-newTableName=f"CH_TEST_DATA_BC_PC_WISE"
+newTableName1=f"CH_TEST_DATA_BC_AC_WISE"
+newTableName2=f"CH_TEST_DATA_BC_PC_WISE"
+newTableName3=f"CH_TEST_DATA_BC_SEQ_WISE_AC"
+newTableName4=f"CH_TEST_DATA_BC_SEQ_WISE_PC"
 
+
+final_table = "ALL_STATE_TEST_DATA_BC"
+
+
+
+#---------------------------------------------------------------------------------------------------------------------#
 spark = SparkSession.builder \
     .appName("ALL_STATE_Voter_Data_Analysis") \
     .config("spark.driver.extraClassPath", driver_path) \
-    .config("spark.sql.shuffle.partitions", "1000") \
+    .config("spark.sql.shuffle.partitions", "8") \
     .config("spark.executor.memory", "32g") \
     .config("spark.executor.memoryOverhead", "16g") \
     .config("spark.driver.memory", "32g") \
@@ -89,42 +100,80 @@ final_bc_df = bc_df.join(
     how="left"
 )
 
-
-
 print("Second query Execute completed ....")
 print(" ")
 #------------------------------------------------------------------------------------------------#
 
-rows_count=final_bc_df.count()
 final_merged_df=final_bc_df
-# if rows_count > 0:
-#     # print("👇👇👇👇👇👇 Merged Data 👇👇👇👇👇👇")
-#     # final_bc_df.show(10)
-#     # print(rows_count)
-#     end_time = time.time()
-#     elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)
-#     print(f"Total time taken to fetched Data: {elapsed_time_seconds:.2f} seconds ({minutes} minutes {seconds:.2f} seconds)")
-
-
 
 #---------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------#
 #---------------------------------------------------------------------------------------------------------------------#
-print("BC Rount data calculation start .....😊😊😊😊")
+print("BC Round AC_Wise data calculation start .....😊😊😊😊")
 
-final_dataframe = main_processing_function(final_merged_df)
+ac_final_dataframe = AC_Wise_calculation(final_merged_df)
+ac_final_dataframe = ac_final_dataframe.withColumn('ROUND', lit('BC'))
+# result1 = insert_dataframe_into_database(ac_final_dataframe, newTableName1,url, driver)
+# print(result1)
+print("BC Round AC_Wise data Execution completed .....😊😊😊😊")
 
-final_dataframe = final_dataframe.withColumn('ROUND', lit('BC'))
-# df=final_dataframe
-#
-# result = insert_dataframe_into_database(df, newTableName,url, driver)
-# print(result)
+print("BC Round PC_Wise data calculation start .....😊😊😊😊")
+pc_final_dataframe = PC_Wise_calculation(final_merged_df)
+# result2 = insert_dataframe_into_database(pc_final_dataframe, newTableName2,url, driver)
+# print(result2)
+print("BC Round PC_Wise data Execution completed .....😊😊😊😊")
+
+print("BC Round SEQ_Wise_AC data calculation start .....😊😊😊😊")
+seqAC_final_dataframe = SEQ_Wise_calculation_AC(final_merged_df)
+# result3 = insert_dataframe_into_database(seqAC_final_dataframe, newTableName3,url, driver)
+# print(result3)
+print("BC Round SEQ_Wise_AC data Execution completed .....😊😊😊😊")
+
+print("BC Round SEQ_Wise_PC data calculation start .....😊😊😊😊")
+seqPC_final_dataframe = SEQ_Wise_calculation_PC(final_merged_df)
+# result4 = insert_dataframe_into_database(seqPC_final_dataframe, newTableName4,url, driver)
+# print(result4)
+print("BC Round SEQ_Wise_PC data Execution completed .....😊😊😊😊")
+
+
+# First, merge ac_final_dataframe and pc_final_dataframe
+merged_df1 = ac_final_dataframe.join(pc_final_dataframe, ['AC_ID', 'PC_ID','AC_NO','PC_NO','N_PARTY','RES1','state','REGION'], how='left')
+
+# Then, merge the result with seqAC_final_dataframe
+merged_df2 = merged_df1.join(seqAC_final_dataframe, ['AC_ID', 'PC_ID','AC_NO','PC_NO','N_PARTY','RES1','state','REGION'], how='left')
+
+# Finally, merge the result with seqPC_final_dataframe
+final_merged_df = merged_df2.join(seqPC_final_dataframe, ['AC_ID', 'PC_ID','AC_NO','PC_NO','N_PARTY','RES1','state','REGION'], how='left')
+
+desired_order = [
+    'AC_ID', 'PC_ID', 'AC_NO', 'PC_NO', 'state', 'N_PARTY', 'RES1',
+    'RES_ACWISE', 'AC_WISE_PERCENTAGE', 'MAX_PER_ACWISE', 'WINNER_ACWISE', '2ND_PER_ACWISE', 'RUNNER_UP_ACWISE',
+    'MARGIN_ACWISE', 'MARGIN_GROUP_ACWISE', 'SUMMERY_ACWISE',
+    'RES_PCWISE', 'PC_WISE_PERCENTAGE', 'MAX_PER_PCWISE', 'WINNER_PCWISE', '2ND_PER_PCWISE', 'RUNNER_UP_PCWISE',
+    'MARGIN_PCWISE', 'MARGIN_GROUP_PCWISE', 'SUMMERY_PCWISE',
+    'RES_SEQWISE_AC','SEQ_WISE_PERCENTAGE_AC', 'MAX_PER_SEQWISE_AC', 'WINNER_SEQWISE_AC', '2ND_PER_SEQWISE_AC',
+    'RUNNER_UP_SEQWISE_AC','MARGIN_SEQWISE_AC','MARGIN_GROUP_SEQWISE_AC', 'SUMMERY_SEQWISE_AC',
+    'RES_SEQWISE_PC','SEQ_WISE_PERCENTAGE_PC', 'MAX_PER_SEQWISE_PC', 'WINNER_SEQWISE_PC', '2ND_PER_SEQWISE_PC',
+    'RUNNER_UP_SEQWISE_PC', 'MARGIN_SEQWISE_PC', 'MARGIN_GROUP_SEQWISE_PC', 'SUMMERY_SEQWISE_PC',
+    'REGION', 'ROUND'
+]
+
+
+df_reordered = final_merged_df.select(*desired_order)
+df_reordered.to_csv('desired_order.csv', index=False)
+
+# res = insert_dataframe_into_database(df_reordered,url,final_table, driver)
+# print(res)
+# res=export_csv_file(df_reordered,final_table)
+# print(res)
+
+
 
 end_time = time.time()
 elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)
 print(f"Total time taken to calculating the Data: {elapsed_time_seconds:.2f} seconds ({minutes} minutes {seconds:.2f} seconds)")
 # print('BC ROUND final Data', df.count())
-print("BC Round data Execution completed .....😊😊😊😊")
+
 
 
 # spark.stop()

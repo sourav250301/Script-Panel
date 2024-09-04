@@ -9,7 +9,7 @@ from pyspark.sql import Window
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-from FUNCTION.utils import calculate_elapsed_time
+from FUNCTION.utils import calculate_elapsed_time, export_csv_file, insert_dataframe_into_database
 from FUNCTION.Function_for_calculation import main_processing_function
 
 driver_path = r"D:\DOWNLOAD\ojdbc11.jar"
@@ -22,7 +22,7 @@ database = 'voter'
 port = '1433'
 driver = 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
 url = f"jdbc:sqlserver://{server}:1433;databaseName={database};user={user};password={password}"
-newTableName = f"ALL_STATE_TEST_DATA_EP"
+newTableName = f"ALL_STATE_TEST_DATA_BC"
 
 spark = SparkSession.builder \
     .appName("ALL_STATE_Voter_Data_Analysis") \
@@ -42,11 +42,8 @@ spark = SparkSession.builder \
     .config("spark.sql.debug.maxToStringFields", "200") \
     .getOrCreate()
 
-statesEP = ['ep_ap', 'ep_asm', 'ep_br', 'ep_cg', 'ep_ch', 'ep_dl', 'ep_ga', 'ep_gj', 'ep_hp', 'ep_tn', 'ep_hr', 'ep_jh', 'ep_ka', 'ep_kl', 'ep_mh', 'ep_mp', 'ep_od', 'ep_pb', 'ep_rj', 'ep_tg', 'ep_uk', 'ep_up', 'ep_wb']
-
-
-# statesBC = ['bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch', 'bc_dl', 'bc_ga', 'bc_gj', 'bc_hp', 'bc_tn', 'bc_hr', 'bc_jh',
-#             'bc_ka', 'bc_kl', 'bc_mh', 'bc_mp', 'bc_od', 'bc_pb', 'bc_rj', 'bc_tg', 'bc_uk', 'bc_up', 'bc_wb']
+statesBC = ['bc_ap', 'bc_asm', 'bc_br', 'bc_cg', 'bc_ch', 'bc_dl', 'bc_ga', 'bc_gj', 'bc_hp', 'bc_tn', 'bc_hr', 'bc_jh',
+            'bc_ka', 'bc_kl', 'bc_mh', 'bc_mp', 'bc_od', 'bc_pb', 'bc_rj', 'bc_tg', 'bc_uk', 'bc_up', 'bc_wb']
 
 
 # statesBC = ['bc_ch']
@@ -57,7 +54,7 @@ def import_queries(module_name, state_list):
     return {state: getattr(module, state) for state in state_list}
 
 
-ep_queries = import_queries('Queries.queries_EP', statesEP)
+bc_queries = import_queries('Queries.queries_BC', statesBC)
 
 # ------------------------------------------------------------------------------------------------#
 print("Executing SQL Queries...................")
@@ -78,7 +75,7 @@ print("Completed SQL Queries...................")
 print(" ")
 # ------------------------------------------------------------------------------------------------#
 
-ep_df = create_df_from_queries(ep_queries)
+bc_df = create_df_from_queries(bc_queries)
 # ------------------------------------------------------------------------------------------------#
 
 print("Second query Execute Start ....")
@@ -103,16 +100,16 @@ print("Second query Execute completed ....")
 print(" ")
 # ------------------------------------------------------------------------------------------------#
 
-rows_count = final_bc_df.count()
+# rows_count = final_bc_df.count()
 final_merged_df = final_bc_df
-if rows_count > 0:
-    # print("👇👇👇👇👇👇 Merged Data 👇👇👇👇👇👇")
-    # final_bc_df.show(10)
-    # print(rows_count)
-    end_time = time.time()
-    elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)
-    print(
-        f"Total time taken to fetched Data: {elapsed_time_seconds:.2f} seconds ({minutes} minutes {seconds:.2f} seconds)")
+# if rows_count > 0:
+#     # print("👇👇👇👇👇👇 Merged Data 👇👇👇👇👇👇")
+#     # final_bc_df.show(10)
+#     # print(rows_count)
+#     end_time = time.time()
+#     elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)
+#     print(
+#         f"Total time taken to fetched Data: {elapsed_time_seconds:.2f} seconds ({minutes} minutes {seconds:.2f} seconds)")
 
 # ---------------------------------------------------------------------------------------------------------------------#
 # ---------------------------------------------------------------------------------------------------------------------#
@@ -120,12 +117,12 @@ if rows_count > 0:
 print("BC Rount data calculation start .....😊😊😊😊")
 
 final_dataframe = main_processing_function(final_merged_df)
-final_dataframe = final_dataframe.withColumn('ROUND', lit('EP'))
-final_dataframe.printSchema()
+final_dataframe = final_dataframe.withColumn('ROUND', lit('BC'))
+# final_dataframe.printSchema()
 # final_dataframe = final_dataframe.repartition(100, "AC_ID")
 
-result = insert_dataframe_into_database(final_dataframe, url, newTableName, driver)
-print(result)
+# result = insert_dataframe_into_database(final_dataframe, url, newTableName, driver)
+# print(result)
 
 end_time = time.time()
 elapsed_time_seconds, minutes, seconds = calculate_elapsed_time(start_time, end_time)
